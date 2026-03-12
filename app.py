@@ -28,12 +28,173 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Global CSS injection ──────────────────────────────────────────────────────
+st.markdown("""
+<style>
+/* ── Import Inter font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── Base ── */
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ── Hide default Streamlit branding ── */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header[data-testid="stHeader"] {
+    background: rgba(14,17,23,0.85) !important;
+    backdrop-filter: blur(12px) !important;
+}
+
+/* ── Sidebar ── */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0f1119 0%, #161927 100%) !important;
+    border-right: 1px solid rgba(124,58,237,0.15) !important;
+}
+section[data-testid="stSidebar"] .stSelectbox label,
+section[data-testid="stSidebar"] .stMarkdown p,
+section[data-testid="stSidebar"] .stMarkdown li {
+    color: #b0b8c8 !important;
+    font-size: 0.88rem !important;
+}
+
+/* ── Metric cards ── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(99,102,241,0.06)) !important;
+    border: 1px solid rgba(124,58,237,0.18) !important;
+    border-radius: 14px !important;
+    padding: 18px 20px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+div[data-testid="stMetric"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.12);
+}
+div[data-testid="stMetric"] label {
+    color: #8b92a5 !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #f0f2f6 !important;
+    font-size: 1.7rem !important;
+    font-weight: 700 !important;
+}
+
+/* ── Tabs ── */
+button[data-baseweb="tab"] {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    color: #8b92a5 !important;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 10px 24px !important;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #a78bfa !important;
+    background: rgba(124,58,237,0.06) !important;
+}
+
+/* ── Primary button ── */
+button[kind="primary"], .stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #7C3AED, #6366F1) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.02em;
+    padding: 12px 24px !important;
+    transition: all 0.25s ease !important;
+}
+button[kind="primary"]:hover {
+    box-shadow: 0 6px 20px rgba(124,58,237,0.35) !important;
+    transform: translateY(-1px);
+}
+
+/* ── Text area ── */
+textarea {
+    border: 1px solid rgba(124,58,237,0.2) !important;
+    border-radius: 12px !important;
+    background: rgba(14,17,23,0.6) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.9rem !important;
+    transition: border-color 0.2s ease !important;
+}
+textarea:focus {
+    border-color: #7C3AED !important;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.15) !important;
+}
+
+/* ── File uploader ── */
+section[data-testid="stFileUploader"] {
+    border: 2px dashed rgba(124,58,237,0.25) !important;
+    border-radius: 14px !important;
+    padding: 20px !important;
+    background: rgba(124,58,237,0.03) !important;
+}
+
+/* ── Dataframe ── */
+[data-testid="stDataFrame"] {
+    border-radius: 14px !important;
+    overflow: hidden;
+    border: 1px solid rgba(124,58,237,0.12) !important;
+}
+
+/* ── Expander ── */
+details {
+    border: 1px solid rgba(124,58,237,0.12) !important;
+    border-radius: 14px !important;
+    background: rgba(14,17,23,0.4) !important;
+}
+details summary {
+    font-weight: 600 !important;
+    color: #c4b5fd !important;
+}
+
+/* ── Download button ── */
+.stDownloadButton > button {
+    background: transparent !important;
+    border: 1px solid rgba(124,58,237,0.3) !important;
+    border-radius: 12px !important;
+    color: #a78bfa !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+.stDownloadButton > button:hover {
+    background: rgba(124,58,237,0.1) !important;
+    border-color: #7C3AED !important;
+}
+
+/* ── Dividers ── */
+hr {
+    border-color: rgba(124,58,237,0.1) !important;
+    margin: 2rem 0 !important;
+}
+
+/* ── Subheaders ── */
+.stSubheader, h2, h3 {
+    color: #e2e0f0 !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.25); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.45); }
+</style>
+""", unsafe_allow_html=True)
+
 # ── Colour / style constants ───────────────────────────────────────────────────
 PRIORITY_COLOURS = {
-    "Critical": "#FF4B4B",
-    "High":     "#FF8C00",
-    "Medium":   "#FFC300",
-    "Low":      "#28A745",
+    "Critical": "#EF4444",
+    "High":     "#F97316",
+    "Medium":   "#EAB308",
+    "Low":      "#22C55E",
 }
 
 CATEGORY_ICONS = {
@@ -276,16 +437,29 @@ def render_summary_card(summary: str) -> None:
     st.markdown(
         f"""
         <div style="
-            background: linear-gradient(135deg, #1E1E2E, #2D2D44);
-            border-left: 4px solid #7C3AED;
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            color: #E0E0E0;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(99,102,241,0.04));
+            border: 1px solid rgba(124,58,237,0.15);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin: 8px 0 24px 0;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            position: relative;
+            overflow: hidden;
         ">
-            <strong style="color:#A78BFA; font-size:1rem;">📋 Project Summary</strong><br><br>
+            <div style="
+                position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+                background: linear-gradient(180deg, #7C3AED, #6366F1);
+                border-radius: 16px 0 0 16px;
+            "></div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                <span style="
+                    background: rgba(124,58,237,0.12); border-radius:10px;
+                    padding: 6px 10px; font-size: 1.1rem;
+                ">📋</span>
+                <span style="color:#c4b5fd; font-weight:600; font-size:0.95rem; letter-spacing:0.02em;">Project Summary</span>
+            </div>
             {summary}
         </div>
         """,
@@ -298,13 +472,15 @@ def render_metrics(df: pd.DataFrame) -> None:
     total    = len(df)
     critical = len(df[df["Priority"] == "Critical"])
     high     = len(df[df["Priority"] == "High"])
+    medium   = len(df[df["Priority"] == "Medium"])
     avg_score = df["Score (P×I)"].mean()
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🔢 Total Risks",       total)
-    c2.metric("🔴 Critical Risks",    critical)
-    c3.metric("🟠 High Risks",        high)
-    c4.metric("📊 Avg Priority Score", f"{avg_score:.1f} / 9")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Total Risks",    total)
+    c2.metric("Critical",       critical)
+    c3.metric("High",           high)
+    c4.metric("Medium",         medium)
+    c5.metric("Avg Score",      f"{avg_score:.1f}")
 
 
 def render_risk_chart(df: pd.DataFrame) -> None:
@@ -420,15 +596,34 @@ def main() -> None:
     # ── Header ───────────────────────────────────────────────────────────────
     st.markdown(
         """
-        <div style="text-align:center; padding: 10px 0 4px 0;">
-            <h1 style="font-size:2.4rem; margin-bottom:4px;">
-                🧠 RiskMind AI
+        <div style="text-align:center; padding: 24px 0 8px 0;">
+            <div style="
+                display:inline-flex; align-items:center; justify-content:center;
+                width:64px; height:64px; border-radius:18px;
+                background: linear-gradient(135deg, #7C3AED, #6366F1);
+                margin-bottom: 16px;
+                box-shadow: 0 8px 32px rgba(124,58,237,0.25);
+            ">
+                <span style="font-size:2rem;">🧠</span>
+            </div>
+            <h1 style="
+                font-size:2.2rem; margin:0 0 6px 0; font-weight:700;
+                background: linear-gradient(135deg, #f0f2f6, #c4b5fd);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                letter-spacing: -0.02em;
+            ">
+                RiskMind AI
             </h1>
-            <p style="color:#9CA3AF; font-size:1.05rem; margin:0;">
-                Project Risk Analysis Assistant · Powered by Groq &amp; LLaMA
+            <p style="color:#6b7280; font-size:0.9rem; margin:0; font-weight:400; letter-spacing:0.02em;">
+                AI-powered project risk analysis
             </p>
         </div>
-        <hr style="border-color:#374151; margin: 12px 0 24px 0;">
+        <div style="
+            width:80px; height:3px; margin:20px auto 28px auto;
+            background: linear-gradient(90deg, #7C3AED, #6366F1);
+            border-radius: 4px;
+        "></div>
         """,
         unsafe_allow_html=True,
     )
@@ -532,9 +727,9 @@ def main() -> None:
     st.divider()
 
     # ── Risk register table ───────────────────────────────────────────────────
-    st.subheader("📊 Risk Register")
+    st.subheader("Risk Register")
     st.caption(
-        f"Identified **{len(df)} risks**, sorted by priority score (highest first). "
+        f"**{len(df)} risks** identified, sorted by priority score. "
         "Score = Probability × Impact (max 9)."
     )
 
@@ -548,49 +743,76 @@ def main() -> None:
     st.divider()
 
     # ── Risk score bar chart ──────────────────────────────────────────────────
-    st.subheader("📈 Risk Priority Chart")
-    st.caption("Horizontal bars show the P×I score for each identified risk.")
+    st.subheader("Risk Priority Chart")
+    st.caption("Score distribution across all identified risks.")
     render_risk_chart(df)
 
     st.divider()
 
     # ── Detailed risk cards ───────────────────────────────────────────────────
-    with st.expander("🔎 Detailed Risk Cards", expanded=False):
+    with st.expander("Detailed Risk Breakdown", expanded=False):
         for _, row in df.iterrows():
             priority_colour = PRIORITY_COLOURS.get(row["Priority"], "#888")
+            text_col = '#fff' if row['Priority'] in ('Critical', 'High') else '#000'
             st.markdown(
                 f"""
                 <div style="
-                    border-left: 4px solid {priority_colour};
-                    background: #1E1E2E;
-                    border-radius: 6px;
-                    padding: 14px 18px;
-                    margin-bottom: 12px;
+                    background: linear-gradient(135deg, rgba(30,30,46,0.8), rgba(22,25,39,0.9));
+                    border: 1px solid rgba(124,58,237,0.1);
+                    border-radius: 16px;
+                    padding: 20px 24px;
+                    margin-bottom: 14px;
+                    position: relative;
+                    overflow: hidden;
                 ">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <strong style="font-size:1rem; color:#E0E0E0;">
-                            {row['#']}. {row['Risk Name']}
-                        </strong>
+                    <div style="
+                        position:absolute; top:0; left:0; width:4px; height:100%;
+                        background:{priority_colour};
+                        border-radius:16px 0 0 16px;
+                    "></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span style="
+                                background:rgba(124,58,237,0.1); border-radius:10px;
+                                padding:6px 11px; font-size:0.82rem; font-weight:700; color:#a78bfa;
+                            ">{row['#']}</span>
+                            <strong style="font-size:0.98rem; color:#f0f2f6; font-weight:600;">
+                                {row['Risk Name']}
+                            </strong>
+                        </div>
                         <span style="
                             background:{priority_colour};
-                            color:{'white' if row['Priority'] in ('Critical','High') else 'black'};
-                            padding: 2px 10px;
-                            border-radius: 12px;
-                            font-size: 0.8rem;
-                            font-weight: bold;
+                            color:{text_col};
+                            padding: 4px 14px;
+                            border-radius: 20px;
+                            font-size: 0.72rem;
+                            font-weight: 700;
+                            letter-spacing: 0.04em;
+                            text-transform: uppercase;
                         ">{row['Priority']}</span>
                     </div>
-                    <div style="color:#9CA3AF; font-size:0.85rem; margin: 4px 0 10px 0;">
-                        {row['Category']} &nbsp;|&nbsp; 
-                        P: <strong>{row['Probability']}</strong> &nbsp;·&nbsp; 
-                        I: <strong>{row['Impact']}</strong> &nbsp;·&nbsp;
-                        Score: <strong>{row['Score (P×I)']}</strong>
+                    <div style="
+                        display:flex; gap:16px; flex-wrap:wrap;
+                        color:#8b92a5; font-size:0.8rem; margin-bottom:14px;
+                        padding: 8px 14px;
+                        background: rgba(0,0,0,0.15); border-radius:10px;
+                    ">
+                        <span>{row['Category']}</span>
+                        <span>P: <b style='color:#c4b5fd'>{row['Probability']}</b></span>
+                        <span>I: <b style='color:#c4b5fd'>{row['Impact']}</b></span>
+                        <span>Score: <b style='color:#c4b5fd'>{row['Score (P×I)']}</b></span>
                     </div>
-                    <div style="color:#CBD5E1; font-size:0.88rem; margin-bottom:8px;">
-                        <em>📎 Evidence:</em> {row['Evidence']}
+                    <div style="color:#94a3b8; font-size:0.86rem; margin-bottom:10px; line-height:1.6;">
+                        <span style="color:#8b92a5; font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">Evidence</span><br>
+                        {row['Evidence']}
                     </div>
-                    <div style="color:#A7F3D0; font-size:0.88rem;">
-                        <strong>✅ Mitigation:</strong> {row['Recommendation']}
+                    <div style="
+                        color:#86efac; font-size:0.86rem; line-height:1.6;
+                        padding:10px 14px; background:rgba(34,197,94,0.06);
+                        border-radius:10px; border:1px solid rgba(34,197,94,0.1);
+                    ">
+                        <span style="font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#4ade80;">Mitigation</span><br>
+                        {row['Recommendation']}
                     </div>
                 </div>
                 """,
@@ -598,21 +820,35 @@ def main() -> None:
             )
 
     # ── CSV download ──────────────────────────────────────────────────────────
-    st.subheader("💾 Export Risk Register")
-
     csv_data = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="⬇️  Download Risk Register as CSV",
-        data=csv_data,
-        file_name="riskmind_risk_register.csv",
-        mime="text/csv",
-        use_container_width=True,
-    )
-
-    st.caption(
-        f"✅ Analysis complete · Model used: `{selected_model}` · "
-        f"{len(df)} risks identified"
-    )
+    dl_col1, dl_col2 = st.columns([3, 1])
+    with dl_col2:
+        st.download_button(
+            label="⬇  Download CSV",
+            data=csv_data,
+            file_name="riskmind_risk_register.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+    with dl_col1:
+        st.markdown(
+            f"""
+            <div style="
+                display:flex; align-items:center; gap:12px;
+                padding:12px 0; color:#6b7280; font-size:0.82rem;
+            ">
+                <span style="
+                    background:rgba(34,197,94,0.1); color:#4ade80;
+                    border-radius:20px; padding:4px 12px;
+                    font-weight:600; font-size:0.75rem;
+                ">✓ Complete</span>
+                <span>Model: <b style="color:#a78bfa">{selected_model}</b></span>
+                <span>•</span>
+                <span><b style="color:#e2e0f0">{len(df)}</b> risks identified</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
