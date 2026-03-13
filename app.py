@@ -10,6 +10,7 @@ import os
 import re
 from html import escape
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -20,9 +21,15 @@ from groq import Groq
 load_dotenv()
 
 
+BRAND_NAME = "RiskMind Prime"
+BRAND_TAGLINE = "AI Risk Intelligence for Project Leaders"
+BRAND_FAVICON = "🛡️"
+BRAND_EXPORT_PREFIX = "riskmind_prime"
+
+
 st.set_page_config(
-    page_title="RiskMind AI",
-    page_icon="🧠",
+    page_title=BRAND_NAME,
+    page_icon=BRAND_FAVICON,
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -266,6 +273,38 @@ details {
 details summary {
     color: var(--rm-text) !important;
     font-weight: 700 !important;
+}
+
+details [data-testid="stMarkdownContainer"],
+details [data-testid="stMarkdownContainer"] p,
+details [data-testid="stMarkdownContainer"] strong,
+details [data-testid="stMarkdownContainer"] b {
+    color: #1f2328 !important;
+    opacity: 1 !important;
+}
+
+details [data-testid="stText"],
+details [data-testid="stText"] *,
+details [data-testid="stVerticalBlock"] p,
+details [data-testid="stVerticalBlock"] span,
+details [data-testid="stVerticalBlock"] li {
+    color: #1f2328 !important;
+    opacity: 1 !important;
+}
+
+details [data-testid="stCaptionContainer"],
+details [data-testid="stCaptionContainer"] * {
+    color: #3f3730 !important;
+    opacity: 1 !important;
+}
+
+details [data-testid="stAlertContainer"] {
+    background: #eef9f0 !important;
+    border: 1px solid #b8e1bf !important;
+}
+
+details [data-testid="stAlertContainer"] p {
+    color: #1f2328 !important;
 }
 
 @keyframes rm-fade-in {
@@ -523,7 +562,15 @@ def style_dataframe(df: pd.DataFrame) -> "pd.io.formats.style.Styler":
     """Apply visual styling to risk register table."""
     return (
         df.style.applymap(colour_priority, subset=["Priority"])
-        .set_properties(**{"text-align": "left"})
+        .format({"Score (P*I)": "{:.0f}"})
+        .set_properties(
+            subset=["Risk Name", "Category", "Evidence", "Recommendation"],
+            **{"text-align": "left"},
+        )
+        .set_properties(
+            subset=["Probability", "Impact", "Priority", "Score (P*I)"],
+            **{"text-align": "center", "font-weight": "600"},
+        )
         .set_table_styles(
             [
                 {
@@ -544,14 +591,14 @@ def style_dataframe(df: pd.DataFrame) -> "pd.io.formats.style.Styler":
 def render_header() -> None:
     """Render the top hero region."""
     st.markdown(
-        """
+        f"""
         <div class="rm-hero">
-            <h1 class="rm-hero-title">RiskMind AI</h1>
-            <p class="rm-hero-subtitle">A clearer and faster workspace for project risk discovery, scoring, and mitigation planning.</p>
+            <h1 class="rm-hero-title">{BRAND_FAVICON} {BRAND_NAME}</h1>
+            <p class="rm-hero-subtitle">{BRAND_TAGLINE}</p>
             <div class="rm-chip-row">
-                <span class="rm-chip">PMBOK categories</span>
+                <span class="rm-chip">PMBOK aligned</span>
                 <span class="rm-chip">Structured JSON output</span>
-                <span class="rm-chip">CSV export ready</span>
+                <span class="rm-chip">Executive-ready exports</span>
             </div>
         </div>
         """,
@@ -600,14 +647,39 @@ def render_metrics(df: pd.DataFrame) -> None:
 
 
 def render_risk_chart(df: pd.DataFrame) -> None:
-    """Render score chart sorted from low to high for visual contrast."""
-    chart_data = df[["Risk Name", "Score (P*I)"]].set_index("Risk Name").sort_values("Score (P*I)")
-    st.bar_chart(chart_data, color="#EA5B2F", height=340)
+    """Render a visually rich priority chart with colors by risk level."""
+    chart_df = df[["Risk Name", "Priority", "Score (P*I)"]].sort_values("Score (P*I)", ascending=False)
+    priority_order = ["Low", "Medium", "High", "Critical"]
+    color_scale = alt.Scale(
+        domain=priority_order,
+        range=["#228B4E", "#DC8B00", "#D84A1B", "#A32020"],
+    )
+
+    chart = (
+        alt.Chart(chart_df)
+        .mark_bar(cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
+        .encode(
+            y=alt.Y("Risk Name:N", sort="-x", title=None),
+            x=alt.X("Score (P*I):Q", title="Priority Score (P x I)", scale=alt.Scale(domain=[0, 9.5])),
+            color=alt.Color("Priority:N", scale=color_scale, legend=alt.Legend(orient="top", title="Priority")),
+            tooltip=[
+                alt.Tooltip("Risk Name:N"),
+                alt.Tooltip("Priority:N"),
+                alt.Tooltip("Score (P*I):Q"),
+            ],
+        )
+        .properties(height=min(420, 45 * max(4, len(chart_df))))
+    )
+
+    st.altair_chart(chart, use_container_width=True)
 
 
 def render_sidebar() -> str:
     """Render sidebar controls and return selected model value."""
     with st.sidebar:
+        st.markdown(f"### {BRAND_FAVICON} {BRAND_NAME}")
+        st.caption(BRAND_TAGLINE)
+        st.divider()
         st.title("Settings")
         model = st.selectbox(
             "Model",
@@ -640,6 +712,9 @@ def render_sidebar() -> str:
 | 1-2 | Low |
             """
         )
+
+        st.divider()
+        st.caption(f"{BRAND_NAME} | Version 2.0")
 
     return model
 
@@ -721,54 +796,44 @@ def run_analysis(project_text: str, model: str) -> None:
 
 
 def render_risk_cards(df: pd.DataFrame) -> None:
-    """Render expanded cards for risk-level details with safe text escaping."""
+    """Render detailed risks with robust native Streamlit components."""
+    priority_icon = {
+        "Critical": "🔴",
+        "High": "🟠",
+        "Medium": "🟡",
+        "Low": "🟢",
+    }
+
     with st.expander("Detailed Risk Breakdown", expanded=False):
         for _, row in df.iterrows():
             priority = str(row["Priority"])
-            priority_colour = PRIORITY_COLOURS.get(priority, "#999999")
-            text_colour = "#ffffff" if priority in ("Critical", "High") else "#1f2328"
+            with st.container(border=True):
+                title_col, tag_col = st.columns([5, 2])
+                with title_col:
+                    st.markdown(f"**#{int(row['#'])} {str(row['Risk Name'])}**")
+                with tag_col:
+                    st.markdown(f"**{priority_icon.get(priority, '🟡')} {priority}**")
 
-            risk_name = escape(str(row["Risk Name"]))
-            category = escape(str(row["Category"]))
-            probability = escape(str(row["Probability"]))
-            impact = escape(str(row["Impact"]))
-            score = escape(str(row["Score (P*I)"]))
-            evidence = escape(str(row["Evidence"]))
-            recommendation = escape(str(row["Recommendation"]))
-            risk_index = escape(str(row["#"]))
+                st.caption(
+                    f"{str(row['Category'])} | "
+                    f"P: {str(row['Probability'])} | "
+                    f"I: {str(row['Impact'])} | "
+                    f"Score: {str(row['Score (P*I)'])}"
+                )
 
-            st.markdown(
-                f"""
-                <div style="
-                    border: 1px solid #f0dcc3;
-                    border-radius: 14px;
-                    background: linear-gradient(120deg, rgba(255,255,255,0.94), rgba(255,248,237,0.9));
-                    padding: 18px;
-                    margin-bottom: 12px;
-                ">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="background:#fff1dc; border:1px solid #f0dcc3; border-radius:8px; padding:3px 8px; font-weight:700; color:#5f4c39;">#{risk_index}</span>
-                            <strong style="font-size:0.96rem; color:#1f2328;">{risk_name}</strong>
-                        </div>
-                        <span style="background:{priority_colour}; color:{text_colour}; border-radius:999px; padding:5px 12px; font-size:0.72rem; font-weight:700; letter-spacing:0.04em;">{priority}</span>
-                    </div>
+                st.markdown("**Evidence**")
+                st.write(str(row["Evidence"]))
 
-                    <div style="font-size:0.8rem; color:#4b4036; margin-bottom:9px;">{category} | P: <b>{probability}</b> | I: <b>{impact}</b> | Score: <b>{score}</b></div>
-
-                    <div style="font-size:0.84rem; color:#3f3730; margin-bottom:8px; line-height:1.6;">
-                        <b style="display:block; text-transform:uppercase; font-size:0.7rem; color:#5f4f41; letter-spacing:0.06em;">Evidence</b>
-                        {evidence}
-                    </div>
-
-                    <div style="font-size:0.84rem; color:#264b2f; line-height:1.6; background:rgba(34,139,78,0.08); border:1px solid rgba(34,139,78,0.18); border-radius:10px; padding:10px 12px;">
-                        <b style="display:block; text-transform:uppercase; font-size:0.7rem; color:#228b4e; letter-spacing:0.06em;">Mitigation</b>
-                        {recommendation}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                st.markdown("**Mitigation**")
+                recommendation = str(row["Recommendation"])
+                if priority == "Critical":
+                    st.error(recommendation)
+                elif priority == "High":
+                    st.warning(recommendation)
+                elif priority == "Medium":
+                    st.info(recommendation)
+                else:
+                    st.success(recommendation)
 
 
 def render_results(selected_model: str, project_text: str) -> None:
@@ -805,9 +870,9 @@ def render_results(selected_model: str, project_text: str) -> None:
     c1, c2 = st.columns([3, 1])
     with c2:
         st.download_button(
-            label="Download CSV",
+            label="Download Risk Register CSV",
             data=csv_data,
-            file_name="riskmind_risk_register.csv",
+            file_name=f"{BRAND_EXPORT_PREFIX}_risk_register.csv",
             mime="text/csv",
             use_container_width=True,
         )
