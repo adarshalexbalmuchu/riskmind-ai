@@ -279,7 +279,7 @@ export default function App() {
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
                 <span style={{ fontSize: '0.82rem', color: 'var(--rm-critical)' }}>
-                  ✕ {key.toUpperCase()}: {msg.slice(0, 80)}
+                  ✕ {key.toUpperCase()}: {msg}
                 </span>
                 <button onClick={() => retryStep(key)} style={{
                   padding: '4px 12px', borderRadius: 8, border: '1px solid rgba(163,32,32,0.4)',
