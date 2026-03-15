@@ -6,7 +6,7 @@
  */
 
 const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'claude-3-5-sonnet-20241022'
 
 const SYSTEM_PROMPT = `You are an expert project manager and business analyst.
 Analyze the provided project document and respond ONLY with valid JSON.
