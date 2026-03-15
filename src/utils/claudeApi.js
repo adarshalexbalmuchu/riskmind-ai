@@ -1,51 +1,49 @@
 /**
- * Anthropic Claude API calls for the 5 PM analysis deliverables.
+ * Groq API calls for the 5 PM analysis deliverables.
+ * Uses llama-3.3-70b-versatile via Groq's OpenAI-compatible endpoint.
  *
- * WARNING: For production, move these calls to a backend proxy.
- * Never expose API keys in a public-facing frontend.
+ * WARNING: For production, move API calls to a backend proxy.
  */
 
-const API_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL   = 'claude-3-5-sonnet-20241022'
+const API_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const MODEL   = 'llama-3.3-70b-versatile'
 
-// Truncate document to avoid exceeding token limits
 const MAX_TEXT_CHARS = 12000
 
 const SYSTEM_PROMPT = `You are an expert project manager and business analyst.
 Analyze the provided project document and respond ONLY with valid JSON.
 Do not include markdown, code fences, or explanations — only raw JSON.`
 
-async function callClaude(userPrompt, signal) {
-  const apiKey = (import.meta.env.VITE_ANTHROPIC_API_KEY || '').trim()
+async function callGroq(userPrompt, signal) {
+  const apiKey = (import.meta.env.VITE_GROQ_API_KEY || '').trim()
 
   if (!apiKey) {
-    throw new Error('API key not found. Set VITE_ANTHROPIC_API_KEY in your environment.')
+    throw new Error('API key not found. Set VITE_GROQ_API_KEY in your environment.')
   }
 
-  const body = {
-    model: MODEL,
-    max_tokens: 2048,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userPrompt }],
-  }
-
-  console.log('[Claude] Sending request, model:', MODEL, 'prompt length:', userPrompt.length)
+  console.log('[Groq] Sending request, model:', MODEL, 'prompt length:', userPrompt.length)
 
   const res = await fetch(API_URL, {
     method: 'POST',
     signal,
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
+      'Authorization': `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      model: MODEL,
+      temperature: 0.3,
+      max_tokens: 2048,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: userPrompt },
+      ],
+    }),
   })
 
   if (!res.ok) {
     const errText = await res.text()
-    console.error('[Claude] API error', res.status, errText)
+    console.error('[Groq] API error', res.status, errText)
     let detail = errText
     try {
       const parsed = JSON.parse(errText)
@@ -55,7 +53,7 @@ async function callClaude(userPrompt, signal) {
   }
 
   const data = await res.json()
-  const raw  = data.content?.[0]?.text ?? ''
+  const raw  = data.choices?.[0]?.message?.content ?? ''
   const cleaned = raw
     .replace(/^```(?:json)?\s*/m, '')
     .replace(/\s*```$/m, '')
@@ -64,7 +62,7 @@ async function callClaude(userPrompt, signal) {
   try {
     return JSON.parse(cleaned)
   } catch {
-    console.error('[Claude] JSON parse failed. Raw response:', raw.slice(0, 500))
+    console.error('[Groq] JSON parse failed. Raw response:', raw.slice(0, 500))
     throw new Error(`Response was not valid JSON: ${raw.slice(0, 200)}`)
   }
 }
@@ -89,7 +87,7 @@ export async function generateScopeOfWork(text, signal) {
 }
 PROJECT DOCUMENT:
 ${doc}`
-  return callClaude(prompt, signal)
+  return callGroq(prompt, signal)
 }
 
 export async function generateWBS(text, signal) {
@@ -111,7 +109,7 @@ export async function generateWBS(text, signal) {
 Include at least 3 top-level phases with 3-5 sub-tasks each.
 PROJECT DOCUMENT:
 ${doc}`
-  return callClaude(prompt, signal)
+  return callGroq(prompt, signal)
 }
 
 export async function generateRiskAnalysis(text, signal) {
@@ -138,7 +136,7 @@ Probability and Impact must be: Low, Medium, or High.
 Identify at least 6 risks.
 PROJECT DOCUMENT:
 ${doc}`
-  return callClaude(prompt, signal)
+  return callGroq(prompt, signal)
 }
 
 export async function generateGanttData(text, signal) {
@@ -164,7 +162,7 @@ export async function generateGanttData(text, signal) {
 Use ${today} as the project start date. All day values must be integers.
 PROJECT DOCUMENT:
 ${doc}`
-  return callClaude(prompt, signal)
+  return callGroq(prompt, signal)
 }
 
 export async function generatePERTData(text, signal) {
@@ -191,5 +189,5 @@ export async function generatePERTData(text, signal) {
 }
 PROJECT DOCUMENT:
 ${doc}`
-  return callClaude(prompt, signal)
+  return callGroq(prompt, signal)
 }
